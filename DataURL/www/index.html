@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+	<!-- Change this if you want to allow scaling -->
+    <meta name="viewport" content="width=default-width; user-scalable=no" />
+
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+
+    <title>DataURL</title>
+	
+	<!-- iPad/iPhone specific css below, add after your main css >
+	<link rel="stylesheet" media="only screen and (max-device-width: 1024px)" href="ipad.css" type="text/css" />		
+	<link rel="stylesheet" media="only screen and (max-device-width: 480px)" href="iphone.css" type="text/css" />		
+	-->
+	<!-- If you application is targeting iOS BEFORE 4.0 you MUST put json2.js from http://www.JSON.org/json2.js into your www directory and include it here -->
+	<script type="text/javascript" charset="utf-8" src="phonegap.0.9.4.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+
+
+	// If you want to prevent dragging, uncomment this section
+	/*
+	function preventBehavior(e) 
+	{ 
+      e.preventDefault(); 
+    };
+	document.addEventListener("touchmove", preventBehavior, false);
+	*/
+	
+	function onBodyLoad()
+	{
+		document.addEventListener("deviceready",onDeviceReady,false);
+	}
+	
+	/* When this function is called, PhoneGap has been initialized and is ready to roll */
+	function onDeviceReady()
+	{
+		pictureSource=navigator.camera.PictureSourceType;
+        destinationType=navigator.camera.DestinationType;
+		window.requestFileSystem(LocalFileSystem.PERSISTENT, 0,
+			function(fs) { console.log(fs.root.fullPath);},
+			function(error) { console.log("error getting file system");}
+		);
+	}
+	
+	// simple test app to verify that readAsDataURL is working properly.   
+	/* 
+	 * Take a picture and request file URI returned
+	 * display that picture as a small image on the screen via the returned uri
+	 * get the file path from the image uri returned
+	 * create a file reader and call readAsDataURL
+	 * set the returned base64 data as the image src and show on screen
+	 */
+    
+	function getPhoto(source) {
+      // Retrieve image file location from specified source
+      navigator.camera.getPicture(onPhotoURISuccess, onFail, { quality: 50, 
+        destinationType: destinationType.FILE_URI,
+        sourceType: source });
+    }
+	
+	// Called if something bad happens.
+    // 
+    function onFail(message) {
+      alert('Failed because: ' + message);
+    }
+	
+	function onPhotoURISuccess(imageURI) {
+      
+		// I know imageURI is in the format file://localhost/<persistent filesystem>/Documents/tmp/<filename>
+		var path = decodeURI(imageURI.substr(17));
+		console.log("image path: " + path);
+		
+		var smallImage = document.getElementById('smallImage');
+		smallImage.style.display = "block";
+		smallImage.src = imageURI+ "?" + (new Date()).getTime();
+		
+		var reader = new FileReader();
+		reader.onload = dataReadSuccess;
+		reader.onerror = function(evt) { console.log("error in read:" + evt.target.error.code);}; 
+		var file = new File();
+		file.fullPath = path;
+		reader.readAsDataURL(file);
+	}
+	
+	function dataReadSuccess(evt) {
+		var imageData = evt.target.result;
+		
+      // Get image handle
+      //
+      var largeImage = document.getElementById('largeImage');
+
+      // Unhide image elements
+      //
+      largeImage.style.display = 'block';
+
+      // Show the captured photo
+      // The inline CSS rules are used to resize the image
+      //
+	  //largeImage.src = relativeURI + "?" + (new Date()).getTime();
+      largeImage.src = imageData;
+	  
+    }
+
+	
+    </script>
+  </head>
+  <body onload="onBodyLoad()">
+   <button onclick="getPhoto(pictureSource.PHOTOLIBRARY);">From Photo Library</button><br>
+    <button onclick="getPhoto(pictureSource.SAVEDPHOTOALBUM);">From Photo Album</button><br>
+	<button onclick="getPhoto(pictureSource.CAMERA);">From Camera</button><br>
+  <div>Image from file URI</div>
+  <div><img style="display:none;width:60px;height:60px;" id="smallImage" src="" /></div>
+  <div>Image from base64 via readAsDataURL</div>
+   <div> <img style="display:none;" id="largeImage" src="" /></div>
+  	
+  </body>
+</html>
