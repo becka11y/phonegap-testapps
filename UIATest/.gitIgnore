@@ -1,10 +1,5 @@
-!*.mode1v3
-!*.perspectivev3
-!*.pbxuser
-!*.pbxproj
 .DS_Store
 build
-classes
-UIATest*.*
+*/
 www/phonegap*.*
 
