@@ -34,7 +34,7 @@ UIATarget.onAlert = function onAlert(alert) {
     } 
     if (message && message != alertParams.message) {
     	bPass = false;
-    	logParamError("Incorrect message parameterExpected",alertParams.message,message);
+    	logParamError("Incorrect message parameter",alertParams.message,message);
     }
     if (buttons.length != alertParams.buttons.length) {
     	bPass = false;
@@ -58,6 +58,7 @@ UIATarget.onAlert = function onAlert(alert) {
 }
 
 // test simple alert with just message
+//navigator.notification.alert("Simple Alert", callbackFunction);
 var alertParams = { "message": "Simple Alert", "title": "Alert", "buttons": ["OK"], "tapIndex":0 }
 var testName = "Simple Alert";  // must match button name that invokes this test
 UIALogger.logStart(testName);
@@ -73,6 +74,7 @@ else {
 }
 
 // test simple alert with message and title
+//navigator.notification.alert("I'm Late, I'm late, for a very important date!",callbackFunction, "unClever Title");
 testName = "Simple Alert with Title";
 alertParams = { "message": "I'm Late, I'm late, for a very important date!", "title": "unClever Title", "buttons": ["OK"], "tapIndex":0 }
 UIALogger.logStart(testName);
@@ -90,84 +92,73 @@ else {
 
 // test default confirm
 // test default confirm
+function testConfirm(testName, testButtonName, tapIndex) {
+	UIALogger.logStart(testName);
+var testButton = webView.buttons()[testButtonName];
+	testButton.tap();
+	UIATarget.localTarget().delay(2); // see  http: //stackoverflow.com/questions/3651316/handling-alert-with-uiautomation
+	if (bPass == true) {
+		// success callback on html test page writes the index of the button pressed into the page
+		var buttonPressed = parseInt(webView.staticTexts()[2].name());
+		var trueIndex = alertParams.tapIndex + 1;
+		if (buttonPressed == trueIndex) {
+			UIALogger.logPass(testName);
+		} else {
+			logParamError("Incorrect button press returned",trueIndex,buttonPressed);
+			UIALogger.logFail(testName); 
+		}
+	} else {
+		UIALogger.logFail(testName);
+	}
+}
+// test default Confirm with tapIndex of 0
+//navigator.notification.confirm("Simple Confirm", callbackFunction);
+// title and buttons are defaults provided by Cordova JS
 var alertParams = { "message": "Simple Confirm", "title": "Confirm", "buttons": ["OK", "Cancel"], "tapIndex":0 }
-var testName = "Default Confirm";
-UIALogger.logStart(testName);
-var testButton = webView.buttons()[testName];
-//UIALogger.logMessage("button label: " + testButton.name());
-testButton.tap();
-UIATarget.localTarget().delay(2); // see  http: //stackoverflow.com/questions/3651316/handling-alert-with-uiautomation
-if (bPass == true) {
-	var buttonPressed = parseInt(webView.staticTexts()[2].name());
-	var trueIndex = alertParams.tapIndex + 1;
-	if (buttonPressed == trueIndex) {
-		UIALogger.logPass(testName);
-	} else {
-		logParamError("Incorrect button press returned",trueIndex,buttonPressed);
-		UIALogger.logFail(testName); 
-	}
-} else {
-	UIALogger.logFail(testName);
-}
+var testName = "Default Confirm - 0";
+testConfirm(testName,"Default Confirm", 0);
 
-//test confirm with message and custom title
+// test default Confirm with tapIndex of 1
+//navigator.notification.confirm("Simple Confirm", callbackFunction);
+var alertParams = { "message": "Simple Confirm", "title": "Confirm", "buttons": ["OK", "Cancel"], "tapIndex":1 }
+var testName = "Default Confirm - 1";
+
+testConfirm(testName,"Default Confirm", 1);
+
+
+//test confirm with message and custom title, tapIndex 0
+//navigator.notification.confirm("Time to say hello?",callbackFunction, "Confirmation Request");
+var alertParams = { "message": "Time to say hello?", "title": "Confirmation Request", "buttons": ["OK", "Cancel"], "tapIndex":0 }
+var testName = "Default Confirm with Title - 0";
+testConfirm(testName, "Default Confirm with Title",0);
+
+//test confirm with message and custom title, tapIndex 1
 var alertParams = { "message": "Time to say hello?", "title": "Confirmation Request", "buttons": ["OK", "Cancel"], "tapIndex":1 }
-var testName = "Default Confirm with Title";
-UIALogger.logStart(testName);
-var testButton = webView.buttons()[testName];
-//UIALogger.logMessage("button label: " + testButton.name());
-testButton.tap();
-UIATarget.localTarget().delay(3); // see http: //stackoverflow.com/questions/3651316/handling-alert-with-uiautomation
-if (bPass == true) {
-	UIALogger.logMessage(webView.logElementTree()); //staticTexts()["buttonPressed"].name());
-	var buttonPressed = parseInt(webView.staticTexts()[2].name());
-	var trueIndex = alertParams.tapIndex + 1;
-	if (buttonPressed == trueIndex) {
-		UIALogger.logPass(testName);
-	} else {
-		logParamError("Incorrect button press returned",trueIndex,buttonPressed);
-		UIALogger.logFail(testName); 
-	}
-} else {
-	UIALogger.logFail(testName);
-}
+var testName = "Default Confirm with Title - 1";
+testConfirm(testName, "Default Confirm with Title",1);
 	
-//test confirm with message and custom title
+//test confirm with message and custom title and buttons
+//navigator.notification.confirm("Off with her head!",callbackFunction, "Confirmation Request","Of Course!,Oh No");
+var alertParams = { "message": "Off with her head!", "title": "Confirmation Request", "buttons": ["Of Course!","Oh No"], "tapIndex":0 }
+var testName = "Confirm with Title and Custom Buttons - 0";
+testConfirm(testName, "Confirm with Title and Custom Buttons", 0);
+
+//test confirm with message and custom title and buttons
 var alertParams = { "message": "Off with her head!", "title": "Confirmation Request", "buttons": ["Of Course!","Oh No"], "tapIndex":1 }
-var testName = "Confirm with Title and Custom Buttons";
-UIALogger.logStart(testName);
-var testButton = webView.buttons()[testName];
-testButton.tap();
-UIATarget.localTarget().delay(4); // see http: //stackoverflow.com/questions/3651316/handling-alert-with-uiautomation
-if (bPass == true) {
-	var buttonPressed = parseInt(webView.staticTexts()[2].name());
-	var trueIndex = alertParams.tapIndex + 1;
-	if (buttonPressed == trueIndex) {
-		UIALogger.logPass(testName);
-	} else {
-		logParamError("Incorrect button press returned",trueIndex,buttonPressed);
-		UIALogger.logFail(testName); 
-	}
-} else {
-	UIALogger.logFail(testName);
-}
+var testName = "Confirm with Title and Custom Buttons - 1";
+testConfirm(testName, "Confirm with Title and Custom Buttons", 1);
+
 //test confirm with message, custom title and 3 buttons
+//navigator.notification.confirm("Off with her head!",callbackFunction, "Confirmation Request","YES,NO,MAYBE");
+var alertParams = { "message": "Off with her head!", "title": "Confirmation Request", "buttons": ["YES","NO","MAYBE"], "tapIndex":0 }
+var testName = "Confirm with Title and 3 Buttons - 0";
+testConfirm(testName, "Confirm with Title and 3 Buttons", 0);
+
+var alertParams = { "message": "Off with her head!", "title": "Confirmation Request", "buttons": ["YES","NO","MAYBE"], "tapIndex":1 }
+var testName = "Confirm with Title and 3 Buttons - 1";
+testConfirm(testName, "Confirm with Title and 3 Buttons", 1);
+
 var alertParams = { "message": "Off with her head!", "title": "Confirmation Request", "buttons": ["YES","NO","MAYBE"], "tapIndex":2 }
-var testName = "Confirm with Title and 3 Buttons";
-UIALogger.logStart(testName);
-var testButton = webView.buttons()[testName];
-//UIALogger.logMessage("button label: " + testButton.name());
-testButton.tap();
-UIATarget.localTarget().delay(3); // see http: //stackoverflow.com/questions/3651316/handling-alert-with-uiautomation
-if (bPass == true) {
-	var buttonPressed = parseInt(webView.staticTexts()[2].name());
-	var trueIndex = alertParams.tapIndex + 1;
-	if (buttonPressed == trueIndex) {
-		UIALogger.logPass(testName);
-	} else {
-		logParamError("Incorrect button press returned",trueIndex,buttonPressed);
-		UIALogger.logFail(testName); 
-	}
-} else {
-	UIALogger.logFail(testName);
-}
+var testName = "Confirm with Title and 3 Buttons - 2";
+testConfirm(testName, "Confirm with Title and 3 Buttons", 2);
+
